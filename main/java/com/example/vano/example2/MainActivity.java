@@ -52,7 +52,7 @@ public class MainActivity extends MainViewActivity{
     private TextView debugView;
     private Button refreshButton;
     private Button debugButton;
-    String errorCode, answer;
+    String errorCode, answer, requestCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,12 +92,13 @@ public class MainActivity extends MainViewActivity{
 
         answer="";
         errorCode="";
-        new HttpRequest(MainActivity.this).execute("https://api.tfl.gov.uk/StopPoint/490012279S1/arrivals", answer, errorCode);
+        requestCode = "1";
+        new HttpRequest(MainActivity.this).execute("https://api.tfl.gov.uk/StopPoint/490012279S1/arrivals", "", requestCode, errorCode);
 
         refreshButton = findViewById(R.id.refreshButton);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                new HttpRequest(MainActivity.this).execute("https://api.tfl.gov.uk/StopPoint/490012279S1/arrivals", "", errorCode);
+                new HttpRequest(MainActivity.this).execute("https://api.tfl.gov.uk/StopPoint/490012279S1/arrivals", "", requestCode, errorCode);
 
                 // Code here executes on main thread after user presses refreshButton
             }
@@ -124,7 +125,7 @@ public class MainActivity extends MainViewActivity{
 
     }
     @Override
-    public void parseJSON(String str) {
+    public void parseJSON(String str, String reqCode) {
         try {
             thistext.setText("");
             arrivalTable.removeAllViews();

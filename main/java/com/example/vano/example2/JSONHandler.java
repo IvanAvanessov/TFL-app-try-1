@@ -9,7 +9,7 @@ public class JSONHandler {
     String fieldName;
     JSONObject[] output;
 
-    public JSONObject[] sortJsonArray(JSONArray input, String fn){
+    public JSONObject[] sortJsonArray(JSONArray input, String fn){ //fn = field name
 
         int items = input.length();
         output = new JSONObject[items];
@@ -31,19 +31,15 @@ public class JSONHandler {
         // Find sizes of two subarrays to be merged
         int n1 = m - l + 1;
         int n2 = r - m;
-
         /* Create temp arrays */
         JSONObject[] L = new JSONObject[n1];
         JSONObject[] R = new JSONObject[n2];
-
         /*Copy data to temp arrays*/
         for (int i=0; i<n1; ++i)
             L[i] = arr[l+i];
                     //[i] = arr[l + i];
         for (int j=0; j<n2; ++j)
             R[j] = arr[m + 1+ j];
-
-
         /* Merge the temp arrays */
 
         // Initial indexes of first and second subarrays
@@ -51,8 +47,7 @@ public class JSONHandler {
 
         // Initial index of merged subarry array
         int k = l;
-        while (i < n1 && j < n2)
-        {
+        while (i < n1 && j < n2) {
             try {
                 if (Integer.parseInt(L[i].get(fieldName).toString()) <= Integer.parseInt(R[j].get(fieldName).toString()))
                 {
@@ -69,7 +64,6 @@ public class JSONHandler {
             }
             k++;
         }
-
         /* Copy remaining elements of L[] if any */
         while (i < n1)
         {

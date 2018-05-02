@@ -70,7 +70,7 @@ public class FindBusStop extends MainViewActivity {
                     searchString = URLEncoder.encode( searchString, "UTF-8" );
                     String answer ="", errorCode="";
                     new HttpRequest(FindBusStop.this).execute("https://api.tfl.gov.uk/StopPoint/Search/" + searchString.replace( "+", "%20" ),
-                            answer, errorCode);
+                            answer,"2", errorCode);
 
                 } catch (UnsupportedEncodingException e){
                     e.printStackTrace();
@@ -85,84 +85,56 @@ public class FindBusStop extends MainViewActivity {
         }*/
     }
 
-    public void parseJSON(String str) {
+    public void parseJSON(String str, String reqID) {
         resultText.setText( str );
-        try {
-            if(str.length()>0) {
 
-                JSONObject response = new JSONObject( str );
-                int responseSize = Integer.parseInt( response.get( "total" ).toString());
+        //Just looking for list of busses here
+        if(reqID.equals("1")){
+            parseAsFinalBusStop(str);
+        }
 
-                if(responseSize > 0) {
-                    //resultText.setText(response.get( "matches" ).toString());//String.valueOf( responseSize));
-                    JSONArray responseArray = new JSONArray( response.get( "matches" ).toString() );
+        else if (reqID.equals("2")){
 
-                    resultText.setText(responseArray.toString());//response.get( "matches" ).toString());
+            try {
+
+                JSONObject searchRes = new JSONObject( str );
+                int totalMatches = Integer.parseInt( searchRes.get("total").toString());
+                if (totalMatches == 0) { //0 matches returned
+                    resultText.setText( "There is no results. Please check your internet and query and try again" );
+                } else {
+                    resultText.setText("");
+                    JSONArray tempResults = new JSONArray(searchRes.get("matches").toString());
+                    JSONObject[] matchDetails = new JSONObject[totalMatches];
+                    for (int i = 0; i < totalMatches; i ++) {
+                        matchDetails[i] = (JSONObject) tempResults.get( i );
+
+                        resultText.append( matchDetails[i].get( "id" ).toString() );
+                        resultText.append("\n");
+                    }
                 }
 
-            /*
-            JSONObject[] finalAnswer = new JSONHandler().sortJsonArray(new JSONArray(str),"timeToStation");
-            for (int i = 0; i < finalAnswer.length; i++) {
-                JSONObject thisBus = finalAnswer[i];
 
-                String minName = thisBus.get("vehicleId").toString();
-
-
-                arrivalTable.addView(new ArrivalItemRow(this, thisBus.get("lineName").toString(), thisBus.get("destinationName").toString(),
-                        formatHHMM(Integer.parseInt(thisBus.get("timeToStation").toString()))));
-                DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-                Date date = new Date();
-                textTime.setText(dateFormat.format(date));
-*/
-                //display.concat();
-                //thistext.setText(s);
-                //if(JSONResponse.length()>0) {
-
-                //thistext.setText(String.valueOf(JSONResponse.length()));
-                //}
+            } catch (JSONException e){
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+            //result of a first stage search
         }
-
-
 
     }
-    /*
-    public void parseJSON(String str) {
-        try {
-            thistext.setText("");
-            arrivalTable.removeAllViews();
+    private void parseAsFinalBusStop(String str){
+        if(str.length()>0) {
+            try {
+                JSONObject response = new JSONObject( str );
+                int responseSize = Integer.parseInt( response.get( "total" ).toString());
+                if(responseSize > 0) {
+                    JSONArray responseArray = new JSONArray( response.get( "matches" ).toString() );
 
-            JSONObject[] finalAnswer = new JSONHandler().sortJsonArray(new JSONArray(str),"timeToStation");
-            for (int i = 0; i < finalAnswer.length; i++) {
-                JSONObject thisBus = finalAnswer[i];
-
-                String minName = thisBus.get("vehicleId").toString();
-
-                thistext.append(thisBus.get("lineName").toString() + " to " +
-                        thisBus.get("destinationName").toString() + "; Arriving in " +
-                        formatHHMM(Integer.parseInt(thisBus.get("timeToStation").toString())) + "\n");
-
-
-                arrivalTable.addView(new ArrivalItemRow(this, thisBus.get("lineName").toString(), thisBus.get("destinationName").toString(),
-                        formatHHMM(Integer.parseInt(thisBus.get("timeToStation").toString()))));
-                DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-                Date date = new Date();
-                textTime.setText(dateFormat.format(date));
-
-                //display.concat();
+                    resultText.setText(responseArray.toString());
+                }
             }
-            //thistext.setText(s);
-            //if(JSONResponse.length()>0) {
-
-            //thistext.setText(String.valueOf(JSONResponse.length()));
-            //}
-
-        } catch (JSONException e) {
-            e.printStackTrace();
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
-
-    }*/
-
+    }
 }

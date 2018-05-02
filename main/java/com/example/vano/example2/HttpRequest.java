@@ -17,9 +17,10 @@ import android.widget.Toast;
 public class HttpRequest extends AsyncTask<String, String, String[]> {
 
     int thisURL = 0;
-    int errorCode = 2;
+    int errorCode = 3;
     int result = 1;
     int counter = 0;
+    int requestID = 2;
 
     private ProgressDialog thisPrDialog;
     //private MainActivity thisActivity;
@@ -89,7 +90,7 @@ public class HttpRequest extends AsyncTask<String, String, String[]> {
     protected void onPostExecute(String... results) {
         super.onPostExecute(results);
 
-        context.parseJSON(results[result]);
+        context.parseJSON(results[result], results[requestID]);
 
         thisPrDialog.dismiss();
     }
