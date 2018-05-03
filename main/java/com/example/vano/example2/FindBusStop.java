@@ -86,7 +86,7 @@ public class FindBusStop extends MainViewActivity {
     }
 
     public void parseJSON(String str, String reqID) {
-        resultText.setText( str );
+        //resultText.setText( str );
 
         //Just looking for list of busses here
         if(reqID.equals("1")){
@@ -105,10 +105,13 @@ public class FindBusStop extends MainViewActivity {
                     resultText.setText("");
                     JSONArray tempResults = new JSONArray(searchRes.get("matches").toString());
                     JSONObject[] matchDetails = new JSONObject[totalMatches];
-                    for (int i = 0; i < totalMatches; i ++) {
+                    for (int i = 0; i < totalMatches && i < 15; i ++) { //do not start more than 15 asynctasks
                         matchDetails[i] = (JSONObject) tempResults.get( i );
 
                         resultText.append( matchDetails[i].get( "id" ).toString() );
+                        new HttpRequest(FindBusStop.this).execute("https://api.tfl.gov.uk/StopPoint/" + matchDetails[i].get( "id" ).toString(),
+                                "","3", "");
+
                         resultText.append("\n");
                     }
                 }
@@ -118,6 +121,35 @@ public class FindBusStop extends MainViewActivity {
                 e.printStackTrace();
             }
             //result of a first stage search
+        }
+        else if (reqID.equals("3")){
+            try {
+
+                JSONObject searchRes = new JSONObject( str );
+                //int totalMatches = Integer.parseInt( searchRes.get("total").toString());
+                //if (totalMatches == 0) { //0 matches returned
+                //    resultText.setText( "There is no results. Please check your internet and query and try again" );
+                //} else {
+
+                    JSONArray tempResults = new JSONArray(searchRes.get("lineGroup").toString());
+                    int totalStops = tempResults.length();
+                    JSONObject[] matchDetails = new JSONObject[totalStops];
+                    for (int i = 0; i < totalStops; i ++) {
+                        matchDetails[i] = (JSONObject) tempResults.get( i );
+
+                        resultText.append( matchDetails[i].get( "naptanIdReference" ).toString() );
+                        //new HttpRequest(FindBusStop.this).execute("https://api.tfl.gov.uk/StopPoint/" + matchDetails[i].get( "id" ).toString(),
+                        //        "","3", "");
+
+                        resultText.append("\n");
+                    }
+                //}
+
+
+            } catch (JSONException e){
+                e.printStackTrace();
+            }
+
         }
 
     }

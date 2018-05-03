@@ -68,6 +68,16 @@
         android:text="Results here"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        tools:isScrollContainer="true"
         tools:layout_editor_absoluteY="16dp" />
+
+    <TableRow
+        android:layout_width="0dp"
+        android:layout_height="278dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="43dp" />
 
 </android.support.constraint.ConstraintLayout>

@@ -90,7 +90,9 @@ public class HttpRequest extends AsyncTask<String, String, String[]> {
     protected void onPostExecute(String... results) {
         super.onPostExecute(results);
 
+
         context.parseJSON(results[result], results[requestID]);
+
 
         thisPrDialog.dismiss();
     }
