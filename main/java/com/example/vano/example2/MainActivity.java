@@ -135,11 +135,6 @@ public class MainActivity extends MainViewActivity{
                 JSONObject thisBus = finalAnswer[i];
 
                 String minName = thisBus.get("vehicleId").toString();
-/*
-                thistext.append(thisBus.get("lineName").toString() + " to " +
-                        thisBus.get("destinationName").toString() + "; Arriving in " +
-                        formatHHMM(Integer.parseInt(thisBus.get("timeToStation").toString())) + "\n");
-                */
 
                 arrivalTable.addView(new ArrivalItemRow(this, thisBus.get("lineName").toString(), thisBus.get("destinationName").toString(),
                         formatHHMM(Integer.parseInt(thisBus.get("timeToStation").toString()))));
@@ -147,13 +142,7 @@ public class MainActivity extends MainViewActivity{
                 Date date = new Date();
                 textTime.setText(dateFormat.format(date));
 
-                //display.concat();
             }
-            //thistext.setText(s);
-            //if(JSONResponse.length()>0) {
-
-            //thistext.setText(String.valueOf(JSONResponse.length()));
-            //}
 
         } catch (JSONException e) {
             e.printStackTrace();

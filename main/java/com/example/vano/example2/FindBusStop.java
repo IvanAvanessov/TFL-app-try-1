@@ -61,11 +61,14 @@ public class FindBusStop extends MainViewActivity {
         searchButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                resultText.setText( "" );
                 String searchString = searchText.getText().toString();
                 if(searchString.length()<3){
                     Toast.makeText(FindBusStop.this, "Your Search message is too short", Toast.LENGTH_LONG).show();
                     return;
                 }
+                //check if need to look for sms code
+
                 try{
                     searchString = URLEncoder.encode( searchString, "UTF-8" );
                     String answer ="", errorCode="";
@@ -108,11 +111,11 @@ public class FindBusStop extends MainViewActivity {
                     for (int i = 0; i < totalMatches && i < 15; i ++) { //do not start more than 15 asynctasks
                         matchDetails[i] = (JSONObject) tempResults.get( i );
 
-                        resultText.append( matchDetails[i].get( "id" ).toString() );
+                        //resultText.append( matchDetails[i].get( "id" ).toString() );
                         new HttpRequest(FindBusStop.this).execute("https://api.tfl.gov.uk/StopPoint/" + matchDetails[i].get( "id" ).toString(),
                                 "","3", "");
 
-                        resultText.append("\n");
+                        //resultText.append("\n");
                     }
                 }
 
@@ -122,37 +125,85 @@ public class FindBusStop extends MainViewActivity {
             }
             //result of a first stage search
         }
-        else if (reqID.equals("3")){
+        else if (reqID.equals("3")){ //
             try {
 
                 JSONObject searchRes = new JSONObject( str );
-                //int totalMatches = Integer.parseInt( searchRes.get("total").toString());
-                //if (totalMatches == 0) { //0 matches returned
-                //    resultText.setText( "There is no results. Please check your internet and query and try again" );
-                //} else {
-
-                    JSONArray tempResults = new JSONArray(searchRes.get("lineGroup").toString());
+                //resultText.append( searchRes.get("modes").toString().equals( "[\"bus\"]" ) + " " + searchRes.get("modes").toString() +  "ZZZ\n");
+                if(searchRes.get("modes").toString().equals( "[\"bus\"]" )){
+                    parseAsBus(searchRes.get("children").toString());
+                }
+                else {
+                    JSONArray tempResults = new JSONArray( searchRes.get( "children" ).toString() );
                     int totalStops = tempResults.length();
                     JSONObject[] matchDetails = new JSONObject[totalStops];
-                    for (int i = 0; i < totalStops; i ++) {
+                    for (int i = 0; i < totalStops; i++) {
                         matchDetails[i] = (JSONObject) tempResults.get( i );
+                        String commonName = matchDetails[i].get( "commonName" ).toString();
+                        String transport;
+                        //resultText.append( matchDetails[i].get( "modes" ).toString() + "S" + " [\"bus\"]" );
+                        if (matchDetails[i].get( "modes" ).toString().equals( "[\"bus\"]" )) {
+                            parseAsBus(matchDetails[i].get("children").toString());
 
-                        resultText.append( matchDetails[i].get( "naptanIdReference" ).toString() );
-                        //new HttpRequest(FindBusStop.this).execute("https://api.tfl.gov.uk/StopPoint/" + matchDetails[i].get( "id" ).toString(),
-                        //        "","3", "");
+                        } else if (matchDetails[i].get( "modes" ).toString().equals( "[\"cable-car\"]" )) {
+                            resultText.append( "CABLE_CAR_SKIP" );
+                            resultText.append( "\n" );
+                            //skip
+                        } else if (matchDetails[i].get( "modes" ).toString().equals( "[\"tube\"]" )) {
+                            commonName = matchDetails[i].get( "commonName" ).toString();
 
-                        resultText.append("\n");
+                            JSONArray tempLineGroup = new JSONArray( matchDetails[i].get( "lineGroup" ).toString() );
+                            JSONObject lineGroup = tempLineGroup.getJSONObject( 0 );
+                            String lineNames = lineGroup.get( "lineIdentifier" ).toString();
+                            resultText.append( commonName + " " + " " + lineNames + " " + "Tube" + " "
+                                    + matchDetails[i].get( "naptanId" ).toString() );
+                            resultText.append( "\n" );
+
+                        } else if (matchDetails[i].get( "modes" ).toString().equals( "[\"river-bus\"]" )){
+                            resultText.append( "RIVER_BUS_SKIP  \n" );
+                        }
                     }
-                //}
+                    //}
 
-
+                }
             } catch (JSONException e){
                 e.printStackTrace();
             }
 
         }
+        else if (reqID.equals("4")){
+
+        }
 
     }
+    private void parseAsBus(String str){
+        try {
+            JSONArray tempResults = new JSONArray( str );
+            int totalStops = tempResults.length();
+            JSONObject[] busStops = new JSONObject[totalStops];
+
+            for (int i = 0; i < totalStops; i++) {
+                busStops[i] = (JSONObject) tempResults.get( i );
+                String commonName = busStops[i].get( "commonName" ).toString();
+                String naptanID = busStops[i].get( "naptanId" ).toString();
+                String transport = "Bus";
+                String busNumbers;
+                String indicator = busStops[i].get( "indicator" ).toString();
+
+                JSONArray tempLineGroup = new JSONArray( busStops[i].get( "lineGroup" ).toString() );
+                JSONObject lineGroup = tempLineGroup.getJSONObject( 0 );
+                busNumbers = lineGroup.get( "lineIdentifier" ).toString();
+
+                resultText.append( commonName + " " + transport + " " + busNumbers + " " + indicator + " "
+                            + naptanID);
+                resultText.append( "\n" );
+            }
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+
     private void parseAsFinalBusStop(String str){
         if(str.length()>0) {
             try {
