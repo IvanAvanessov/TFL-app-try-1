@@ -1,5 +1,8 @@
 package com.example.vano.example2;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -8,6 +11,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +33,7 @@ public class FindBusStop extends MainViewActivity {
     private Button searchButton;
     private EditText searchText;
     private TextView resultText;
+    private TableLayout resultTable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,9 +50,16 @@ public class FindBusStop extends MainViewActivity {
                         .setAction("Action", null).show();
             }
         });
+        /*@Override
+        public void onBackPressed(){
+
+        }*/
+
+
         ////////////////////////////////////////////////
         searchText = (EditText) findViewById( R.id.searchText );
         resultText = (TextView) findViewById( R.id.resultsText );
+        resultTable = (TableLayout) findViewById( R.id.resultsTable ) ;
 
         backButton = (Button) findViewById( R.id.backButton );
         backButton.setOnClickListener( new View.OnClickListener() {
@@ -56,6 +69,12 @@ public class FindBusStop extends MainViewActivity {
                 overridePendingTransition( R.anim.slide_in_right, R.anim.slide_out_right );
             }
         } );
+        /*public void onBackPressed(){
+            finish();
+            overridePendingTransition( R.anim.slide_in_right, R.anim.slide_out_right );
+        }*/
+
+
 
         searchButton = (Button) findViewById( R.id.searchButton );
         searchButton.setOnClickListener( new View.OnClickListener() {
@@ -97,7 +116,7 @@ public class FindBusStop extends MainViewActivity {
         }
 
         else if (reqID.equals("2")){
-
+            resultTable.removeAllViews();
             try {
 
                 JSONObject searchRes = new JSONObject( str );
@@ -142,25 +161,33 @@ public class FindBusStop extends MainViewActivity {
                         String commonName = matchDetails[i].get( "commonName" ).toString();
                         String transport;
                         //resultText.append( matchDetails[i].get( "modes" ).toString() + "S" + " [\"bus\"]" );
+                        commonName = matchDetails[i].get( "commonName" ).toString();
+
                         if (matchDetails[i].get( "modes" ).toString().equals( "[\"bus\"]" )) {
                             parseAsBus(matchDetails[i].get("children").toString());
 
                         } else if (matchDetails[i].get( "modes" ).toString().equals( "[\"cable-car\"]" )) {
-                            resultText.append( "CABLE_CAR_SKIP" );
-                            resultText.append( "\n" );
+                            resultTable.addView( new SearchItemRow( this, "Cable car", commonName, "", "" ) );
+                            //resultText.append( "CABLE_CAR_SKIP" );
+                            //resultText.append( "\n" );
                             //skip
                         } else if (matchDetails[i].get( "modes" ).toString().equals( "[\"tube\"]" )) {
-                            commonName = matchDetails[i].get( "commonName" ).toString();
+
 
                             JSONArray tempLineGroup = new JSONArray( matchDetails[i].get( "lineGroup" ).toString() );
-                            JSONObject lineGroup = tempLineGroup.getJSONObject( 0 );
-                            String lineNames = lineGroup.get( "lineIdentifier" ).toString();
-                            resultText.append( commonName + " " + " " + lineNames + " " + "Tube" + " "
-                                    + matchDetails[i].get( "naptanId" ).toString() );
-                            resultText.append( "\n" );
+                            int lineGroupSize = tempLineGroup.length();
+                            for(int k = 0; k < lineGroupSize ; k++) {
+                                JSONObject lineGroup = tempLineGroup.getJSONObject( k );
+                                String lineNames = lineGroup.get( "lineIdentifier" ).toString();
+                                resultTable.addView( new SearchItemRow( this, "Tube", commonName, lineNames, matchDetails[i].get( "naptanId" ).toString() ) );
 
+                                //resultText.append( commonName + " " + " " + lineNames + " " + "Tube" + " "
+                                        //+ matchDetails[i].get( "naptanId" ).toString() );
+                                //resultText.append( "\n" );
+                            }
                         } else if (matchDetails[i].get( "modes" ).toString().equals( "[\"river-bus\"]" )){
-                            resultText.append( "RIVER_BUS_SKIP  \n" );
+                            resultTable.addView( new SearchItemRow( this, "River Bus", commonName, "", "" ) );
+                            //resultText.append( "RIVER_BUS_SKIP  \n" );
                         }
                     }
                     //}
@@ -185,7 +212,7 @@ public class FindBusStop extends MainViewActivity {
             for (int i = 0; i < totalStops; i++) {
                 busStops[i] = (JSONObject) tempResults.get( i );
                 String commonName = busStops[i].get( "commonName" ).toString();
-                String naptanID = busStops[i].get( "naptanId" ).toString();
+                final String naptanID = busStops[i].get( "naptanId" ).toString();
                 String transport = "Bus";
                 String busNumbers;
                 String indicator = busStops[i].get( "indicator" ).toString();
@@ -194,9 +221,30 @@ public class FindBusStop extends MainViewActivity {
                 JSONObject lineGroup = tempLineGroup.getJSONObject( 0 );
                 busNumbers = lineGroup.get( "lineIdentifier" ).toString();
 
-                resultText.append( commonName + " " + transport + " " + busNumbers + " " + indicator + " "
-                            + naptanID);
-                resultText.append( "\n" );
+                //resultText.append( commonName + " " + transport + " " + busNumbers + " " + indicator + " "
+                            //+ naptanID);
+                //resultText.append( "\n" );
+                SearchItemRow tempRow;
+                tempRow = new SearchItemRow( this, transport, commonName + " " + indicator , busNumbers, naptanID );
+                //tempRow.setClickable( true );
+                tempRow.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        /*AlertDialog.Builder mBuilder = new AlertDialog.Builder(FindBusStop.this);
+                        View aView = getLayoutInflater().inflate( R.layout.temp_bus_popup, null);
+                        //Toast.makeText(FindBusStop.this, naptanID, Toast.LENGTH_LONG).show();
+                        //Intent intent = new Intent( FindBusStop.this, TempBusStop.class );
+                        mBuilder.setView( aView );
+                        AlertDialog dialog = mBuilder.show();
+                        dialog.show();*/
+                        Intent intent = new Intent( FindBusStop.this, TempBusStop.class );
+                        intent.putExtra("NAPTAN_ID", naptanID);
+                        startActivity(intent);
+                        overridePendingTransition( R.anim.slide_in_right, R.anim.slide_out_right );
+                    }
+                } );
+                resultTable.addView( tempRow );
+
             }
         } catch (JSONException e){
             e.printStackTrace();

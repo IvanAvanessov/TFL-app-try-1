@@ -24,11 +24,21 @@ public class HttpRequest extends AsyncTask<String, String, String[]> {
 
     private ProgressDialog thisPrDialog;
     //private MainActivity thisActivity;
-    private MainViewActivity context;
+    private MainViewActivity context1;
+    private SimpleActivity context2;
 
     public HttpRequest(MainViewActivity c) {
             super();
-            context = (MainViewActivity) c;
+            context1 = (MainViewActivity) c;
+            context2 = null;
+
+    }
+
+    public HttpRequest(SimpleActivity c) {
+        super();
+        context2 = (SimpleActivity) c;
+        context1 = null;
+
     }
 
     @Override
@@ -81,7 +91,12 @@ public class HttpRequest extends AsyncTask<String, String, String[]> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        thisPrDialog = new ProgressDialog(context);
+        if(context2 == null) {
+            thisPrDialog = new ProgressDialog( context1 );
+        }
+        else{
+            thisPrDialog = new ProgressDialog( context2 );
+        }
         thisPrDialog.setMessage("Downloading data");
         thisPrDialog.show();
     }
@@ -89,11 +104,12 @@ public class HttpRequest extends AsyncTask<String, String, String[]> {
     @Override
     protected void onPostExecute(String... results) {
         super.onPostExecute(results);
-
-
-        context.parseJSON(results[result], results[requestID]);
-
-
+        if(context2 == null) {
+            context1.parseJSON(results[result], results[requestID]);
+        }
+        else{
+            context2.parseJSON(results[result], results[requestID]);
+        }
         thisPrDialog.dismiss();
     }
     /*

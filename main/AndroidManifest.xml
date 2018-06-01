@@ -25,6 +25,12 @@
             android:name=".FindBusStop"
             android:label="@string/title_activity_find_bus_stop"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".TempBusStop"
+            android:label="@string/title_activity_temp_bus_stop"
+            android:theme="@style/AppTheme.CustomPopup"
+
+            ></activity>
     </application>
 
 </manifest>

@@ -137,7 +137,7 @@ public class MainActivity extends MainViewActivity{
                 String minName = thisBus.get("vehicleId").toString();
 
                 arrivalTable.addView(new ArrivalItemRow(this, thisBus.get("lineName").toString(), thisBus.get("destinationName").toString(),
-                        formatHHMM(Integer.parseInt(thisBus.get("timeToStation").toString()))));
+                        formatHHMM(Integer.parseInt(thisBus.get("timeToStation").toString())), getWindow().getDecorView().getWidth()));
                 DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
                 Date date = new Date();
                 textTime.setText(dateFormat.format(date));
